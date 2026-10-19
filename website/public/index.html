@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VRK · The browser that blocks everything but you</title>
+  <meta name="author" content="Virat Kaukuntla">
+  <link rel="author" href="https://virat-kaukuntla.web.app/about">
+  <meta name="description" content="VRK is a free, private, ad-blocking browser on the latest Chromium, with Tor tabs, a built-in VPN, a password manager with passkeys, and VRKOS, a desktop inside your browser. For macOS, Windows and Linux. By Virat Kaukuntla.">
+  <meta property="og:title" content="VRK · The browser that blocks everything but you">
+  <meta property="og:description" content="Ads, trackers and fingerprinting blocked. Tor tabs, a VPN and a whole desktop built in. Free.">
+  <meta property="og:image" content="https://vrkweb.web.app/icon.png">
+  <meta name="theme-color" content="#0c0c0a">
+  <link rel="icon" href="favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=4">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "SoftwareApplication", "name": "VRK", "url": "https://vrkweb.web.app", "description": "A private, ad-blocking web browser with Tor tabs, a built-in VPN and VRKOS.", "author": {"@id": "https://virat-kaukuntla.web.app/#person"}, "creator": {"@id": "https://virat-kaukuntla.web.app/#person"}, "applicationCategory": "BrowserApplication", "operatingSystem": "macOS, Windows, Linux", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}, {"@type": "Person", "@id": "https://virat-kaukuntla.web.app/#person", "name": "Virat Kaukuntla", "alternateName": ["Virat Reddy Kaukuntla", "Virat Reddy"], "url": "https://virat-kaukuntla.web.app/"}]}</script>
+</head>
+<body>
+<canvas id="field" aria-hidden="true"></canvas>
+<div class="grain" aria-hidden="true"></div>
+
+<header class="nav" id="nav">
+  <a class="logo" href="#top"><img src="icon.png" alt="">vrk</a>
+  <nav class="links">
+    <a href="#features">Features</a><a href="#vrkos">VRKOS</a><a href="#compare">Compare</a><a href="#faq">FAQ</a>
+    
+  </nav>
+  <a class="pill-btn" href="#download">Download</a>
+</header>
+
+<main id="top">
+  <!-- ======================= HERO ======================= -->
+  <section class="hero" id="download">
+    <div class="ticker mono"><span class="dot"></span>Chromium <b>152</b> · Tor · WireGuard · free</div>
+    <h1 class="display">
+      <span class="line"><span>Browse like</span></span>
+      <span class="line"><span>nobody's <em>watching.</em></span></span>
+    </h1>
+    <p class="lead reveal">VRK blocks ads, trackers and fingerprinting before they load. It has Tor tabs, a built-in VPN,
+      a password manager with passkeys, and a whole desktop inside it. Nothing you do is sent anywhere.</p>
+
+    <div class="installer reveal" id="installer">
+      <div class="os-tabs" role="tablist">
+        <button data-os="mac" role="tab">macOS</button>
+        <button data-os="win" role="tab">Windows</button>
+        <button data-os="linux" role="tab">Linux <small class="soon">soon</small></button>
+      </div>
+      <div class="cmd-row">
+        <span class="prompt mono" id="prompt">$</span>
+        <code class="mono" id="cmd"></code>
+        <button class="copy" id="copy" aria-label="Copy install command"><span>Copy</span></button>
+      </div>
+      <p class="hint" id="os-hint"></p>
+      <div class="direct" id="direct"></div>
+    </div>
+
+    <!-- A little VRK window: ads get blocked as you watch. -->
+    <div class="window reveal" aria-hidden="true">
+      <div class="w-strip">
+        <i></i><i></i><i></i>
+        <div class="w-tab on"><span class="fav"></span>The Daily Read</div>
+        <div class="w-tab"><span class="fav tor"></span>Tor tab</div>
+        <span class="w-plus">+</span>
+      </div>
+      <div class="w-bar">
+        <span class="w-nav">‹ ›</span>
+        <div class="w-omni"><span class="w-engine"><b class="g">G</b>▾</span><span class="w-url mono">dailyread.example/story</span></div>
+        <span class="w-shield mono"><svg viewBox="0 0 24 24"><path d="M12 3 19 6v5.5c0 4.5-3 8-7 9.5-4-1.5-7-5-7-9.5V6z"/></svg><b id="blocked">0</b></span>
+        <span class="w-vpn mono">VPN</span>
+      </div>
+      <div class="w-page" id="page">
+        <div class="w-article">
+          <h4>Why your browser knows so much about you</h4>
+          <i></i><i></i><i></i><i class="s"></i>
+          <div class="ad a1"><span>AD</span>Buy now! 90% off!</div>
+          <i></i><i></i><i class="s"></i>
+          <div class="ad a2"><span>TRACKER</span>pixel.adnetwork.example</div>
+          <i></i><i></i><i></i>
+        </div>
+        <div class="ad side a3"><span>AD</span>You won't believe…</div>
+        <div class="w-cookie" id="cookie">We value your privacy <u>Accept all</u> <u class="rej">Reject</u></div>
+      </div>
+    </div>
+    <div class="scroll-cue mono reveal">scroll to see what it does ↓</div>
+  </section>
+
+  <!-- ======================= MARQUEE ======================= -->
+  <section class="marquee" aria-label="What VRK blocks">
+    <div class="track" id="track">
+      <span>🚫 Ads</span><span>👁 Trackers</span><span>🧬 Fingerprinting</span><span>🍪 Cookie banners</span><span>🎣 Phishing</span>
+      <span>🦠 Malware</span><span>📡 Telemetry</span><span>🔁 Tracking redirects</span>
+    </div>
+  </section>
+
+  <!-- ======================= FEATURES ======================= -->
+  <section class="features" id="features">
+    <h2 class="section-title reveal">Everything a private<br>browser <em>should</em> do.</h2>
+    <div class="bento">
+      <div class="card big reveal" data-spot>
+        <span class="kicker mono">blocking</span>
+        <h3>Gone before it loads.</h3>
+        <p>uBlock Origin-grade filter lists, a 300,000-domain tracker and telemetry list, cookie banners rejected for you,
+          and tracking links skipped. It scores 98% on the AdBlock Tester, 100% with Aggressive mode.</p>
+        <div class="meters" aria-hidden="true">
+          <div><span>ads</span><i style="--v:.98"></i></div><div><span>trackers</span><i style="--v:1"></i></div><div><span>banners</span><i style="--v:.92"></i></div>
+        </div>
+      </div>
+      <div class="card reveal" data-spot><span class="kicker mono">tor</span><h3>Tor tabs</h3>
+        <p>One click opens a tab that goes through the Tor network, kept apart from everything else. Onion sites work.</p></div>
+      <div class="card reveal" data-spot><span class="kicker mono">vpn</span><h3>Built-in VPN</h3>
+        <p>Bring any WireGuard config. A kill switch holds your traffic if the tunnel drops, so nothing leaks.</p></div>
+      <div class="card reveal" data-spot><span class="kicker mono">identity</span><h3>A face in the crowd</h3>
+        <p>Canvas, audio and hardware fingerprints are randomized per site, so sites can't recognize you across the web.</p></div>
+      <div class="card reveal" data-spot><span class="kicker mono">passwords</span><h3>Passkeys & 2FA</h3>
+        <p>Encrypted password manager with passkeys, 2FA codes, breach alerts and strong-password suggestions.</p></div>
+      <div class="card wide reveal" data-spot><span class="kicker mono">yours</span><h3>Make it look like you.</h3>
+        <p>A full theme editor: gradients, image and video backgrounds, animated effects, glass toolbars. Chrome, Edge and
+          Firefox extensions. Import everything from your old browser in one click.</p>
+        <div class="platforms mono"><span>macOS</span><span>Windows</span><span>Linux</span></div></div>
+    </div>
+  </section>
+
+  <!-- ======================= VRKOS ======================= -->
+  <section class="vrkos" id="vrkos">
+    <div class="vrkos-head reveal">
+      <span class="kicker mono">vrkos</span>
+      <h2 class="section-title">A whole desktop.<br><em>Inside your browser.</em></h2>
+      <p class="muted">Press <code>⌥⌘O</code> and VRK becomes a full-screen desktop running on your own hardware: Files, Terminal,
+        Notes, a code editor, System Monitor, Calendar, and your Mac, Windows or Linux apps, with VRK as its browser.</p>
+    </div>
+    <div class="desk reveal" aria-hidden="true">
+      <div class="desk-bar mono"><b>◆ VRKOS</b><span>🔊 · Wi-Fi · 85% ▮ · Sun 9:41</span></div>
+      <div class="desk-win d1"><div class="dw-top"><i></i><i></i><i></i>Terminal</div><pre class="mono">~ % neofetch
+<em>VRKOS</em> on your own chip
+cores  10 · memory 16 GB
+~ % <span class="caret"></span></pre></div>
+      <div class="desk-win d2"><div class="dw-top"><i></i><i></i><i></i>Files</div><div class="dw-files">
+        <span>📁 Projects</span><span>📁 School</span><span>🖼 wallpaper.png</span><span>📄 notes.txt</span><span>🎬 clip.mp4</span><span>📦 setup.exe</span></div></div>
+      <div class="dock"><span style="--c:#7b6bff"></span><span style="--c:#3b8cff"></span><span style="--c:#1d2230"></span><span style="--c:#ffcc33"></span><span style="--c:#16c47f"></span><span style="--c:#ff4d6d"></span><span style="--c:#2b7cff"></span><span style="--c:#8e9aaf"></span></div>
+    </div>
+  </section>
+
+  <!-- ======================= COMPARE ======================= -->
+  <section class="compare" id="compare">
+    <h2 class="section-title reveal">Honest <em>comparison.</em></h2>
+    <div class="table-wrap reveal">
+      <table>
+        <thead><tr><th></th><th class="me">VRK</th><th>Chrome</th><th>Safari</th><th>Firefox</th><th>Brave</th></tr></thead>
+        <tbody>
+          <tr><th>Blocks ads out of the box</th><td class="y">✓</td><td class="n">✕</td><td class="n">✕</td><td class="n">✕</td><td class="y">✓</td></tr>
+          <tr><th>Blocks trackers</th><td class="y">✓</td><td class="p">◐</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr>
+          <tr><th>Randomizes fingerprints</th><td class="y">✓</td><td class="n">✕</td><td class="p">◐</td><td class="p">◐</td><td class="y">✓</td></tr>
+          <tr><th>Rejects cookie banners</th><td class="y">✓</td><td class="n">✕</td><td class="n">✕</td><td class="p">◐</td><td class="y">✓</td></tr>
+          <tr><th>Tor tabs</th><td class="y">✓</td><td class="n">✕</td><td class="n">✕</td><td class="n">✕</td><td class="y">✓</td></tr>
+          <tr><th>Built-in VPN with your own config</th><td class="y">✓</td><td class="n">✕</td><td class="n">✕</td><td class="n">✕</td><td class="n">✕</td></tr>
+          <tr><th>A desktop with apps inside</th><td class="y">✓</td><td class="n">✕</td><td class="n">✕</td><td class="n">✕</td><td class="n">✕</td></tr>
+          <tr><th>Outside security audit</th><td class="n">✕</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr>
+          <tr><th>Phones & sync</th><td class="n">✕</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted small reveal">Built-in features with default settings, no extensions. VRK has its own 170-check self-test but no outside audit yet.</p>
+  </section>
+
+  <!-- ======================= FAQ ======================= -->
+  <section class="faq" id="faq">
+    <h2 class="section-title reveal">Honest <em>answers.</em></h2>
+    <details class="reveal"><summary>Why a command instead of a download on Mac?</summary><div><p>Downloaded Mac apps need a paid
+      Apple certificate, or macOS calls them "damaged". The command downloads VRK, clears that flag and signs it for your Mac,
+      so it just opens. You can read the script first: <a href="/install.sh">vrkweb.web.app/install.sh</a>.</p></div></details>
+    <details class="reveal"><summary>Windows says "Windows protected your PC".</summary><div><p>That's SmartScreen warning about
+      any app without a paid code-signing certificate. Click <b>More info → Run anyway</b>, or use the PowerShell command,
+      which doesn't trigger it.</p></div></details>
+    <details class="reveal"><summary>What do I need?</summary><div><p>A Mac with an Apple chip (M1 or newer), Windows 10 or 11
+      (64-bit). About 600 MB of space. Linux is coming soon.</p></div></details>
+    <details class="reveal"><summary>Is Tor in VRK as safe as Tor Browser?</summary><div><p>No. Tor tabs hide your address from
+      sites and are great for everyday privacy, but if your safety depends on anonymity, use Tor Browser.</p></div></details>
+    <details class="reveal"><summary>Is it free?</summary><div><p>Yes. No account, no ads, no data collection.</p></div></details>
+  </section>
+
+  <!-- ======================= CTA ======================= -->
+  <section class="cta">
+    <h2 class="display small reveal">Take the web <em>back</em><br>tonight.</h2>
+    <div class="cta-row reveal">
+      <button class="big-btn" id="cta-install">Copy install command</button>
+      <a class="ghost-btn" id="cta-direct" href="#download">Other downloads</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="made">Made by <a href="https://virat-kaukuntla.web.app" target="_blank" rel="author noopener"><b>Virat Kaukuntla</b></a></div>
+  <div class="foot mono"><a href="#faq">faq</a><span>© 2026 Virat Kaukuntla</span></div>
+</footer>
+<div class="toast" id="toast"></div>
+<script src="app.js?v=3"></script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: vrk: blob:; media-src vrk: blob: mediastream:; font-src 'self' data:; base-uri 'none'; form-action 'none'">
+  <title>VRKOS</title>
+  <link rel="stylesheet" href="os.css">
+  <link rel="stylesheet" href="apps.css">
+</head>
+<body>
+  <div class="window">
+    <header class="titlebar">
+      <div class="lights">
+        <button class="light close" title="Close"></button>
+        <button class="light min" title="Minimize"></button>
+        <button class="light max" title="Zoom"></button>
+      </div>
+      <div class="title" id="title"></div>
+      <div class="tools" id="tools"></div>
+    </header>
+    <main class="content" id="content"></main>
+  </div>
+  <script src="shared/theme.js"></script>
+  <script src="icons.js"></script>
+  <script src="common.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

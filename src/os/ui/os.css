@@ -1,0 +1,98 @@
+/* VRKOS: shared look for the desktop and its apps. Colors follow the VRK
+   theme (theme.js sets --bg, --text, --accent… on body); these are fallbacks. */
+
+:root {
+  --bg: #0b0c10;
+  --strip: #0f1015;
+  --surface: #171920;
+  --field: #0e0f14;
+  --text: #e9eaf0;
+  --muted: #8a8fa3;
+  --faint: #5c6072;
+  --line: #262935;
+  --accent: #8b7bff;
+  --accent-2: #2ee6c4;
+  --danger: #ff5370;
+  --warn: #ffb547;
+  --ok: #2ec27e;
+  --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, monospace;
+  --glass-bg: color-mix(in srgb, var(--bg) 58%, transparent);
+  --win-bg: color-mix(in srgb, var(--bg) 96%, var(--text) 4%);
+  color-scheme: dark;
+}
+body[data-theme="light"] {
+  --glass-bg: color-mix(in srgb, #ffffff 62%, transparent);
+  --win-bg: #f7f7fa;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; }
+body { font: 13px/1.4 var(--font-ui); color: var(--text); background: var(--win-bg); -webkit-font-smoothing: antialiased; user-select: none; cursor: default; }
+input, textarea, select, button { font: inherit; color: inherit; }
+::selection { background: color-mix(in srgb, var(--accent) 45%, transparent); }
+[hidden] { display: none !important; }
+
+/* ── Buttons, fields, lists ── */
+.btn { height: 28px; padding: 0 12px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); color: var(--text); cursor: default; white-space: nowrap; }
+.btn:hover { border-color: color-mix(in srgb, var(--text) 25%, var(--line)); }
+.btn:active { transform: translateY(1px); }
+.btn.primary { background: var(--accent); border-color: transparent; color: #fff; font-weight: 600; }
+.btn.danger { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 45%, transparent); }
+.btn.small { height: 24px; padding: 0 9px; font-size: 12px; }
+.btn:disabled { opacity: .45; }
+.icon-btn { width: 28px; height: 28px; display: inline-grid; place-items: center; border: 0; border-radius: 7px; background: transparent; color: var(--muted); }
+.icon-btn:hover { background: color-mix(in srgb, var(--text) 9%, transparent); color: var(--text); }
+.icon-btn svg { width: 16px; height: 16px; }
+.field { height: 28px; padding: 0 10px; border: 1px solid var(--line); border-radius: 7px; background: var(--field); outline: none; }
+.field:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
+.muted { color: var(--muted); }
+.mono { font-family: var(--mono); }
+.empty { padding: 30px; text-align: center; color: var(--muted); }
+.spacer { flex: 1; }
+
+/* ── App window chrome ── */
+.window { display: flex; flex-direction: column; height: 100%; }
+.titlebar { flex: none; height: 38px; display: flex; align-items: center; gap: 8px; padding: 0 12px; background: color-mix(in srgb, var(--bg) 88%, var(--text) 4%); border-bottom: 1px solid var(--line); -webkit-app-region: drag; }
+.titlebar .lights { display: flex; gap: 8px; -webkit-app-region: no-drag; }
+.titlebar .light { width: 12px; height: 12px; border-radius: 50%; border: 0; padding: 0; display: grid; place-items: center; }
+.titlebar .light svg { width: 8px; height: 8px; opacity: 0; color: #4a1c10; }
+.titlebar .lights:hover .light svg { opacity: .75; }
+.light.close { background: #ff5f57; }
+.light.min { background: #febc2e; }
+.light.max { background: #28c840; }
+.titlebar .title { position: absolute; left: 90px; right: 90px; text-align: center; font-weight: 600; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; pointer-events: none; }
+.titlebar .tools { margin-left: auto; display: flex; gap: 4px; align-items: center; -webkit-app-region: no-drag; z-index: 1; }
+.content { flex: 1; min-height: 0; position: relative; display: flex; }
+
+/* ── Sidebars and rows (Files, Notes, Settings…) ── */
+.sidebar { flex: none; width: 200px; padding: 10px 8px; overflow: auto; background: color-mix(in srgb, var(--bg) 70%, var(--strip)); border-right: 1px solid var(--line); }
+.sidebar h4 { margin: 12px 8px 4px; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--faint); }
+.side-item { display: flex; align-items: center; gap: 8px; height: 28px; padding: 0 8px; border-radius: 7px; color: var(--text); }
+.side-item:hover { background: color-mix(in srgb, var(--text) 7%, transparent); }
+.side-item.active { background: color-mix(in srgb, var(--accent) 22%, transparent); color: var(--text); }
+.side-item svg { width: 15px; height: 15px; color: var(--accent); flex: none; }
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.toolbar { flex: none; display: flex; align-items: center; gap: 6px; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+.scroll { flex: 1; min-height: 0; overflow: auto; }
+
+/* ── Modal dialogs and menus (inside one window) ── */
+.modal-back { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(0, 0, 0, .35); z-index: 100; }
+.modal { width: min(420px, 90vw); padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); box-shadow: 0 20px 60px rgba(0, 0, 0, .5); }
+.modal h3 { margin: 0 0 8px; font-size: 15px; }
+.modal p { margin: 0 0 12px; color: var(--muted); }
+.modal .field { width: 100%; margin-bottom: 14px; }
+.modal .actions { display: flex; justify-content: flex-end; gap: 8px; }
+.menu { position: fixed; z-index: 200; min-width: 190px; padding: 5px; border: 1px solid var(--line); border-radius: 9px; background: color-mix(in srgb, var(--surface) 96%, transparent); backdrop-filter: blur(20px); box-shadow: 0 14px 40px rgba(0, 0, 0, .45); }
+.menu button { display: flex; width: 100%; align-items: center; gap: 8px; height: 28px; padding: 0 10px; border: 0; border-radius: 6px; background: none; text-align: left; }
+.menu button:hover:not(:disabled) { background: var(--accent); color: #fff; }
+.menu button:disabled { color: var(--faint); }
+.menu hr { border: 0; border-top: 1px solid var(--line); margin: 4px 6px; }
+.menu .hint { margin-left: auto; color: var(--faint); font-size: 11.5px; }
+.menu button:hover .hint { color: rgba(255, 255, 255, .75); }
+.toast { position: fixed; right: 14px; bottom: 14px; z-index: 150; max-width: 360px; padding: 10px 14px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); box-shadow: 0 10px 30px rgba(0, 0, 0, .4); }
+.toast.err { border-color: color-mix(in srgb, var(--danger) 55%, transparent); }
+
+/* Icons that are still loading take their space but draw nothing. */
+img:not([src]), img[src=""] { visibility: hidden; }
