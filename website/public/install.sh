@@ -7,7 +7,7 @@
 # Apple certificate. Linux: installs the .deb (Debian, Ubuntu) or the AppImage.
 set -euo pipefail
 
-RELEASE="https://vrkweb.web.app/downloads"
+RELEASE="https://github.com/learningnihongo934-byte/vrk/releases/latest/download"
 say() { printf "\033[1;35m◆ VRK\033[0m %s\n" "$*"; }
 fail() { say "$*"; exit 1; }
 WORK="$(mktemp -d)"

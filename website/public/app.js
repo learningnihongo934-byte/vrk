@@ -5,7 +5,7 @@
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
 const SITE = 'https://vrkweb.web.app';
-const RELEASE = 'https://vrkweb.web.app/downloads';
+const RELEASE = 'https://github.com/learningnihongo934-byte/vrk/releases/latest/download';
 const OS = {
   mac: {
     prompt: '$',
@@ -16,9 +16,10 @@ const OS = {
   win: {
     prompt: 'PS>',
     cmd: `irm ${SITE}/install-windows | iex`,
-    hint: 'Paste into PowerShell. Installs VRK for you (no admin needed) and adds it to the Start menu. Or download the .zip, unzip it and run VRK.exe.',
+    hint: 'Paste into PowerShell. Installs VRK for you (no admin needed) and adds it to the Start menu. Or download the installer: if SmartScreen warns, click More info → Run anyway.',
     direct: [
-      ['Download (.zip)', `${RELEASE}/VRK-windows-x64.zip`, 'x64'],
+      ['Installer (.exe)', `${RELEASE}/VRK-Setup-windows-x64.exe`, 'x64'],
+      ['Portable (.zip)', `${RELEASE}/VRK-windows-x64.zip`, 'x64'],
     ],
   },
   linux: {
