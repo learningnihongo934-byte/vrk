@@ -12,11 +12,17 @@ const { EventEmitter } = require('node:events');
 const { freePort } = require('./ports');
 
 const BRIDGES = {
+  auto: { label: 'Automatic (tries every way until one works)' },
   none: { label: 'None (connect directly)' },
   snowflake: { label: 'Snowflake', transport: 'snowflake', plugin: 'snowflake' },
   obfs4: { label: 'obfs4', transport: 'obfs4', plugin: 'lyrebird' },
   meek: { label: 'meek (Azure CDN)', transport: 'meek', plugin: 'lyrebird' },
 };
+
+// Automatic mode: connect directly first, then fall back through the bridges,
+// fastest first and hardest to block last (meek looks like plain Azure traffic).
+const AUTO_ORDER = ['none', 'obfs4', 'snowflake', 'meek'];
+const STALL_MS = 90000; // no bootstrap progress for this long means the method is blocked
 
 class Tor extends EventEmitter {
   constructor({ root, runtimeDir, bridge = 'none', isolateSites = true }) {
@@ -24,7 +30,9 @@ class Tor extends EventEmitter {
     this.isolateSites = isolateSites; // a separate circuit for every site you connect to
     this.root = root; // Tor expert bundle: tor/ (binaries) and data/ (GeoIP)
     this.runtimeDir = runtimeDir;
-    this.bridge = BRIDGES[bridge] ? bridge : 'none';
+    this.bridge = BRIDGES[bridge] ? bridge : 'auto';
+    this.active = null; // the method actually in use (resolves 'auto')
+    this.autoIndex = 0;
     this.state = 'off'; // off | starting | ready | error
     this.progress = 0;
     this.summary = '';
@@ -63,7 +71,9 @@ class Tor extends EventEmitter {
     const defaults = path.join(dataDir, 'torrc-defaults');
     fs.writeFileSync(defaults, '');
     fs.writeFileSync(torrc, this.buildTorrc({ socksPort, controlPort, dataDir }), { mode: 0o600 });
-    Object.assign(this, { socksPort, controlPort, dataDir, progress: 0, summary: 'Starting Tor' });
+    this.active = this.bridge === 'auto' ? AUTO_ORDER[this.autoIndex] : this.bridge;
+    const via = this.active === 'none' ? '' : ` via ${BRIDGES[this.active].label}`;
+    Object.assign(this, { socksPort, controlPort, dataDir, progress: 0, summary: `Starting Tor${via}` });
     this.setState('starting', null);
 
     // Run from the binary's folder so relative pluggable-transport paths resolve.
@@ -72,12 +82,14 @@ class Tor extends EventEmitter {
       stdio: ['ignore', 'pipe', 'pipe'],
     });
     this.proc = proc;
+    this.watchStall(proc);
     let lastWarning = '';
     readline.createInterface({ input: proc.stdout }).on('line', (line) => {
       const boot = line.match(/Bootstrapped (\d+)%[^:]*: (.*)$/);
       if (boot) {
         this.progress = Number(boot[1]);
-        this.summary = boot[2];
+        this.summary = this.active === 'none' ? boot[2] : `${boot[2]} (via ${BRIDGES[this.active].label})`;
+        this.watchStall(proc);
         if (this.progress >= 100) this.setState('ready', null);
         else this.emit('change');
       } else if (/\[(warn|err)\]/.test(line)) {
@@ -89,12 +101,35 @@ class Tor extends EventEmitter {
     proc.on('exit', (code) => this.onExit(proc, lastWarning || `Tor exited (code ${code}).`));
   }
 
+  // In automatic mode, a method that stops making progress is given up on.
+  watchStall(proc) {
+    clearTimeout(this.stallTimer);
+    if (this.bridge !== 'auto' || this.progress >= 100) return;
+    this.stallTimer = setTimeout(() => this.proc === proc && this.fallBack(proc, 'stalled'), STALL_MS);
+  }
+
+  // Kill the current attempt and try the next method; true if there was one.
+  fallBack(proc, reason) {
+    if (this.bridge !== 'auto' || this.autoIndex >= AUTO_ORDER.length - 1) return false;
+    this.autoIndex += 1;
+    this.proc = null;
+    clearTimeout(this.stallTimer);
+    proc.removeAllListeners('exit');
+    proc.kill('SIGKILL');
+    this.cleanupDataDir();
+    this.emit('fallback', { from: AUTO_ORDER[this.autoIndex - 1], to: AUTO_ORDER[this.autoIndex], reason });
+    this.launch();
+    return true;
+  }
+
   onExit(proc, message) {
     if (this.proc !== proc) return;
+    clearTimeout(this.stallTimer);
+    if (!this.stopping && this.fallBack(proc, message)) return;
     this.proc = null;
     this.cleanupDataDir();
     if (this.stopping) this.setState('off', null);
-    else this.setState('error', message);
+    else this.setState('error', this.bridge === 'auto' ? `Tor could not connect by any method. Last error: ${message}` : message);
   }
 
   buildTorrc({ socksPort, controlPort, dataDir }) {
@@ -115,7 +150,7 @@ class Tor extends EventEmitter {
       `__OwningControllerProcess ${process.pid}`,
     ];
     if (this.upstream) lines.push(`Socks5Proxy ${this.upstream}`);
-    const bridge = BRIDGES[this.bridge];
+    const bridge = BRIDGES[this.active || this.bridge];
     if (bridge.transport) {
       const config = JSON.parse(fs.readFileSync(path.join(this.root, 'tor', 'pluggable_transports', 'pt_config.json'), 'utf8'));
       const plugin = config.pluggableTransports[bridge.plugin].replace('${pt_path}', 'pluggable_transports/');
@@ -164,15 +199,20 @@ class Tor extends EventEmitter {
   setBridge(bridge) {
     if (!BRIDGES[bridge] || bridge === this.bridge) return;
     this.bridge = bridge;
+    this.autoIndex = 0;
     if (this.proc || this.state === 'error') this.restart();
   }
 
   async restart() {
     await this.stop();
+    // Automatic mode starts again from the last method that worked.
+    if (this.bridge === 'auto' && this.state !== 'error') this.autoIndex = Math.max(0, AUTO_ORDER.indexOf(this.lastWorking));
+    else if (this.bridge === 'auto') this.autoIndex = 0;
     await this.start();
   }
 
   stop() {
+    clearTimeout(this.stallTimer);
     const proc = this.proc;
     if (!proc) {
       this.setState('off', null);
@@ -204,6 +244,7 @@ class Tor extends EventEmitter {
   setState(state, error) {
     this.state = state;
     this.lastError = error;
+    if (state === 'ready') this.lastWorking = this.active;
     if (state !== 'starting' && state !== 'ready') this.progress = 0;
     this.emit('change');
   }
