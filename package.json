@@ -1,0 +1,196 @@
+{
+  "name": "vrk",
+  "version": "1.0.0",
+  "description": "VRK: a private, ad-blocking browser on the latest Chromium, with Tor tabs, a built-in WireGuard VPN and VRKOS. For macOS, Windows and Linux.",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "selftest": "VRK_SELFTEST=1 VRK_CONFIG_DIR=$(mktemp -d) VRK_OS_HOME=$(mktemp -d) electron . -ApplePersistenceIgnoreState YES",
+    "fetch-binaries": "bash scripts/fetch-binaries.sh",
+    "build-engine": "node scripts/build-engine.mjs",
+    "icon": "electron scripts/make-icon.js",
+    "dist": "npm run build-engine && npm run build-native && electron-builder --mac --dir -c.extraMetadata.vrkSource=\"$PWD\" && bash scripts/sign-mac.sh dist.noindex/mac-arm64/VRK.app",
+    "upgrade-chromium": "npm install --save-dev electron@latest && npm run dist",
+    "install-app": "pgrep -f /Applications/VRK.app/Contents/MacOS >/dev/null && echo 'Quit VRK first.' && exit 1; rm -rf /Applications/VRK.app && ditto dist.noindex/mac-arm64/VRK.app /Applications/VRK.app && /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f /Applications/VRK.app && echo 'VRK installed in /Applications.'",
+    "build-native": "bash scripts/build-native.sh",
+    "postinstall": "chmod +x node_modules/node-pty/prebuilds/darwin-*/spawn-helper 2>/dev/null || true; bash scripts/build-native.sh || echo 'VRKOS full screen needs: xcode-select --install'",
+    "dist:win": "npm run build-engine && ([ -d vendor-win ] || bash scripts/fetch-binaries.sh win) && electron-builder --win",
+    "dist:linux": "npm run build-engine && ([ -d vendor-linux ] || bash scripts/fetch-binaries.sh linux) && electron-builder --linux",
+    "dist:all": "npm run dist && npm run dist:win && npm run dist:linux",
+    "setup-signing": "bash scripts/setup-signing.sh",
+    "dist:mac-zip": "npm run dist && ditto -c -k --keepParent dist.noindex/mac-arm64/VRK.app dist.noindex/VRK-mac-arm64.zip"
+  },
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "@simplewebauthn/server": "^14.0.3",
+    "electron": "^44.9.0",
+    "electron-builder": "^26.15.3",
+    "qrcode": "^1.5.4"
+  },
+  "dependencies": {
+    "@ghostery/adblocker-electron": "^2.18.2",
+    "@xterm/addon-fit": "^0.11.0",
+    "@xterm/xterm": "^6.0.0",
+    "adm-zip": "^0.6.1",
+    "electron-chrome-extensions": "^4.9.0",
+    "electron-chrome-web-store": "^0.13.0",
+    "jsqr": "^1.4.0",
+    "node-pty": "^1.1.0",
+    "tldts": "^7.4.16",
+    "webextension-polyfill": "^0.12.0"
+  },
+  "productName": "VRK",
+  "private": true,
+  "author": "Virat Reddy",
+  "build": {
+    "appId": "com.vrk.browser",
+    "productName": "VRK",
+    "directories": {
+      "output": "dist.noindex"
+    },
+    "files": [
+      "src/**/*",
+      "!src/os/native/*.m",
+      "assets/adblock-engine.bin",
+      "assets/hosts-blocklist.txt",
+      "assets/safety-lists.json",
+      "package.json"
+    ],
+    "asar": true,
+    "mac": {
+      "target": [
+        {
+          "target": "dir"
+        }
+      ],
+      "category": "public.app-category.productivity",
+      "icon": "assets/icon.icns",
+      "extendInfo": {
+        "NSCameraUsageDescription": "Websites you allow can use your camera.",
+        "NSMicrophoneUsageDescription": "Websites you allow can use your microphone.",
+        "NSLocationWhenInUseUsageDescription": "Websites you allow can see your location."
+      },
+      "extraResources": [
+        {
+          "from": "vendor",
+          "to": "vendor"
+        }
+      ],
+      "identity": null
+    },
+    "protocols": [
+      {
+        "name": "Web site URL",
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "role": "Viewer"
+      }
+    ],
+    "electronFuses": {
+      "runAsNode": false,
+      "enableCookieEncryption": true,
+      "enableNodeOptionsEnvironmentVariable": false,
+      "enableNodeCliInspectArguments": false,
+      "enableEmbeddedAsarIntegrityValidation": true,
+      "onlyLoadAppFromAsar": true,
+      "loadBrowserProcessSpecificV8Snapshot": false,
+      "grantFileProtocolExtraPrivileges": false
+    },
+    "asarUnpack": [
+      "node_modules/node-pty/**",
+      "src/os/native/*.node"
+    ],
+    "npmRebuild": false,
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.png",
+      "extraResources": [
+        {
+          "from": "vendor-win",
+          "to": "vendor"
+        }
+      ],
+      "artifactName": "VRK-windows-${arch}.${ext}",
+      "signAndEditExecutable": true
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "VRK",
+      "artifactName": "VRK-Setup-windows-${arch}.${ext}"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.png",
+      "category": "Network;WebBrowser",
+      "executableName": "vrk",
+      "synopsis": "A private, ad-blocking browser with Tor tabs, a built-in VPN and VRKOS.",
+      "mimeTypes": [
+        "x-scheme-handler/http",
+        "x-scheme-handler/https",
+        "text/html"
+      ],
+      "desktop": {
+        "entry": {
+          "Name": "VRK",
+          "Comment": "Private, ad-blocking web browser",
+          "StartupWMClass": "VRK"
+        }
+      },
+      "extraResources": [
+        {
+          "from": "vendor-linux",
+          "to": "vendor"
+        }
+      ],
+      "artifactName": "VRK-linux-${arch}.${ext}",
+      "maintainer": "Virat Reddy"
+    },
+    "deb": {
+      "depends": [
+        "libnss3",
+        "libgtk-3-0",
+        "libxss1",
+        "libasound2t64 | libasound2"
+      ]
+    }
+  },
+  "overrides": {
+    "adm-zip": "^0.6.1"
+  },
+  "allowScripts": {
+    "electron@44.5.1": true,
+    "node-pty@1.1.0": true
+  },
+  "homepage": "https://vrkweb.web.app"
+}

@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: crx: vrk:; media-src vrk:; base-uri 'none'; form-action 'none'">
+  <title>VRK</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-theme="dark" data-accent="violet" data-density="comfortable">
+  <div id="app-bg" aria-hidden="true"></div>
+  <header id="chrome">
+    <div id="tabstrip">
+      <div id="lights"></div>
+      <div id="tabs" role="tablist"></div>
+      <button id="new-tab" class="icon-btn" title="New tab (⌘T). Right-click for a container tab." data-icon="plus"></button>
+      <div class="strip-fill"></div>
+    </div>
+
+    <div id="toolbar">
+      <button id="back" class="icon-btn" title="Back (⌘[)" data-icon="back"></button>
+      <button id="forward" class="icon-btn" title="Forward (⌘])" data-icon="forward"></button>
+      <button id="reload" class="icon-btn" title="Reload (⌘R)" data-icon="reload"></button>
+
+      <form id="omnibox" autocomplete="off">
+        <button id="engine" type="button" class="engine-btn" title="Search with…" aria-label="Choose search engine"></button>
+        <span id="site-chip" class="chip"></span>
+        <input id="address" type="text" spellcheck="false" autocomplete="off" autocapitalize="off" aria-label="Address and search">
+        <span id="zoom-badge" hidden></span>
+        <button id="star" type="button" class="icon-btn small" title="Bookmark this page (⌘D)" data-icon="star"></button>
+      </form>
+
+      <div id="ext-actions"></div>
+      <button id="shields" class="icon-btn" title="Ad & tracker blocking" data-icon="shield"><span id="blocked-count" hidden></span></button>
+      <button id="vpn" class="pill-btn" title="VPN"><span class="dot"></span><span>VPN</span></button>
+      <button id="tor" class="icon-btn" title="Tor (⇧⌘N for a new Tor tab)" data-icon="onion"></button>
+      <button id="burn" class="icon-btn" title="Burn: close all tabs and erase browsing data (⇧⌘⌫)" data-icon="flame"></button>
+      <button id="menu" class="icon-btn" title="Menu" data-icon="dots"></button>
+    </div>
+
+    <div id="bookmarksbar" hidden></div>
+
+    <div id="findbar" class="bar" hidden>
+      <span class="bar-spacer"></span>
+      <div class="find-box">
+        <input id="find-input" type="text" spellcheck="false" placeholder="Find in page">
+        <span id="find-count"></span>
+        <button id="find-prev" class="icon-btn small" title="Previous (⇧⌘G)" data-icon="up"></button>
+        <button id="find-next" class="icon-btn small" title="Next (⌘G)" data-icon="down"></button>
+        <button id="find-close" class="icon-btn small" title="Close (Esc)" data-icon="close"></button>
+      </div>
+    </div>
+
+    <div id="permbar" class="bar" hidden>
+      <span class="bar-icon" data-icon="key"></span>
+      <span id="perm-text" class="bar-text"></span>
+      <button id="perm-block" class="btn">Block</button>
+      <button id="perm-allow" class="btn primary">Allow</button>
+    </div>
+
+    <div id="pwbar" class="bar" hidden>
+      <span class="bar-icon" data-icon="key"></span>
+      <span id="pw-text" class="bar-text"></span>
+      <label id="pw-keep-label" class="check"><input id="pw-keep" type="checkbox" checked><span id="pw-keep-text"></span></label>
+      <button id="pw-never" class="btn">Never</button>
+      <button id="pw-dismiss" class="btn">Not Now</button>
+      <button id="pw-save" class="btn primary">Save</button>
+    </div>
+
+    <div id="noticebar" class="bar" hidden>
+      <span class="bar-icon" data-icon="info"></span>
+      <span id="notice-text" class="bar-text"></span>
+      <button id="notice-action" class="btn" hidden></button>
+      <button id="notice-close" class="icon-btn small" title="Dismiss" data-icon="close"></button>
+    </div>
+
+    <div id="loadbar"><div id="loadbar-fill"></div></div>
+  </header>
+
+  <main id="page">
+    <section id="ntp" class="panel" hidden>
+      <div class="hero intro">
+        <div class="logo" data-icon="logo"></div>
+        <h1 class="wordmark">VRK</h1>
+        <p class="tagline">Browse like you were never here.</p>
+      </div>
+      <form id="ntp-form" class="big-search">
+        <span data-icon="search"></span>
+        <input id="ntp-input" type="text" spellcheck="false" autocomplete="off">
+      </form>
+      <div id="ntp-bookmarks" class="tiles"></div>
+      <div id="ntp-top-wrap" hidden>
+        <p class="tiles-label">Most visited</p>
+        <div id="ntp-top" class="tiles"></div>
+      </div>
+      <div id="ntp-stats" class="stats">
+        <div class="stat"><b id="stat-blocked">0</b><span>ads &amp; trackers blocked</span></div>
+        <div class="stat"><b id="stat-history">0</b><span id="stat-history-label">history entries saved</span></div>
+        <div class="stat"><b id="stat-engine">—</b><span>Chromium engine</span></div>
+      </div>
+      <p class="foot" id="ntp-foot"></p>
+    </section>
+
+    <section id="torpanel" class="panel tor" hidden>
+      <div class="hero">
+        <div class="logo onion" data-icon="onion"></div>
+        <h1>Tor Tab</h1>
+        <p id="tor-status" class="tagline"></p>
+      </div>
+      <div id="tor-progress" class="progress"><div id="tor-progress-fill"></div></div>
+      <form id="tor-form" class="big-search">
+        <span data-icon="search"></span>
+        <input id="tor-input" type="text" spellcheck="false" autocomplete="off" placeholder="Search DuckDuckGo over Tor, or enter an address or .onion">
+      </form>
+      <div class="panel-actions">
+        <button id="tor-retry" class="btn" hidden>Try again</button>
+        <button id="tor-check" class="btn" hidden>Check my Tor connection</button>
+        <button id="tor-identity" class="btn" hidden>New Tor identity</button>
+      </div>
+      <div class="note">
+        <p>Tor tabs send traffic through three volunteer relays, so sites see a Tor exit address instead of yours. Cookies and storage are kept apart from your normal tabs and are never saved.</p>
+        <p class="caution">Tor tabs are not Tor Browser. Chromium is easier to fingerprint, so if your safety depends on staying anonymous, use Tor Browser.</p>
+      </div>
+    </section>
+
+    <section id="vpnpanel" class="panel" hidden>
+      <div class="hero">
+        <div id="vpn-icon" class="logo" data-icon="shield"></div>
+        <h1 id="vpn-title"></h1>
+        <p id="vpn-desc" class="tagline"></p>
+      </div>
+      <div class="panel-actions">
+        <button id="vpn-retry" class="btn primary">Reconnect VPN</button>
+        <button id="vpn-off" class="btn">Turn VPN off</button>
+      </div>
+    </section>
+
+    <section id="errpanel" class="panel" hidden>
+      <div class="hero">
+        <div id="err-icon" class="logo warn" data-icon="warning"></div>
+        <h1 id="err-title"></h1>
+        <p id="err-desc" class="tagline"></p>
+        <code id="err-code"></code>
+      </div>
+      <div class="panel-actions">
+        <button id="err-retry" class="btn primary">Try again</button>
+        <button id="err-insecure" class="btn danger" hidden></button>
+        <button id="err-details" class="btn" hidden>Details</button>
+      </div>
+      <div id="err-more" class="err-more" hidden>
+        <p id="err-more-text">VRK found this site on public lists of phishing and malware sites (OpenPhish, PhishTank and abuse.ch URLhaus), checked on your Mac. If you're sure it's safe, you can visit it anyway.</p>
+        <button id="err-visit" class="btn danger small">Visit this unsafe site</button>
+      </div>
+    </section>
+
+    <section id="historypanel" class="settings history-panel" hidden></section>
+    <section id="themepanel" class="theme-panel" hidden></section>
+    <section id="featurespanel" class="features-panel" hidden></section>
+
+    <section id="settingspanel" class="settings" hidden>
+      <nav class="settings-nav">
+        <h2>Settings</h2>
+        <button data-section="general">General</button>
+        <button data-section="security">Security</button>
+        <button data-section="appearance">Appearance</button>
+        <button data-section="search">Search &amp; new tab</button>
+        <button data-section="privacy">Privacy &amp; security</button>
+        <button data-section="passwords">Passwords</button>
+        <button data-section="extensions">Extensions</button>
+        <button data-section="import">Import</button>
+        <button data-section="network">Tor &amp; VPN</button>
+        <button data-section="about">About VRK</button>
+      </nav>
+      <div class="settings-body">
+        <div id="restart-banner" class="banner" hidden>
+          <span>Some changes take effect after VRK restarts.</span>
+          <button id="restart-now" class="btn primary">Restart VRK</button>
+        </div>
+        <div id="settings-content"></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="burn-flash" hidden></div>
+
+  <section id="lockscreen" hidden>
+      <div class="lock-card">
+        <div class="logo" data-icon="shield"></div>
+        <h1>VRK is locked</h1>
+        <p class="tagline">Your tabs are hidden until you unlock.</p>
+        <button id="lock-unlock" class="btn primary">Unlock with Touch ID</button>
+      </div>
+    </section>
+    <div id="splash">
+    <canvas id="splash-canvas"></canvas>
+    <div class="splash-center">
+      <div class="splash-ring"></div>
+      <svg class="splash-logo" viewBox="0 0 64 64" fill="none">
+        <defs>
+          <linearGradient id="splash-g" x1="8" y1="4" x2="56" y2="60" gradientUnits="userSpaceOnUse">
+            <stop offset="0" class="splash-stop-1"/><stop offset=".55" class="splash-stop-2"/><stop offset="1" class="splash-stop-3"/>
+          </linearGradient>
+        </defs>
+        <path class="s-fill" d="M32 4l22 8v18c0 14-9.5 25-22 30C19.5 55 10 44 10 30V12L32 4z"/>
+        <path class="s-shield" pathLength="1" d="M32 4l22 8v18c0 14-9.5 25-22 30C19.5 55 10 44 10 30V12L32 4z"/>
+        <path class="s-v" pathLength="1" d="M21 22l11 22 11-22"/>
+      </svg>
+      <h1 class="splash-word"><span>V</span><span>R</span><span>K</span></h1>
+      <p class="splash-tag">Browse like you were never here.</p>
+    </div>
+    <span class="splash-skip">Click to skip</span>
+  </div>
+
+  <script src="theme.js"></script>
+  <script src="effects.js"></script>
+  <script src="app.js"></script>
+  <script src="settings.js"></script>
+  <script src="history.js"></script>
+  <script src="theme-editor.js"></script>
+  <script src="features.js"></script>
+  <script src="splash.js"></script>
+</body>
+</html>

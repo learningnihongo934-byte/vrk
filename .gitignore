@@ -1,0 +1,15 @@
+node_modules/
+dist/
+vendor/
+.DS_Store
+vendor-win/
+vendor-linux/
+dist.noindex/
+src/os/native/*.node
+website/.firebase/
+*.log
+.vrk-signing/
+website/public/downloads/
+assets/adblock-engine.bin
+assets/hosts-blocklist.txt
+assets/safety-lists.json

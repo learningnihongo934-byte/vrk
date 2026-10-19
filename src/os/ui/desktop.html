@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: vrk: blob:; media-src vrk: blob:; font-src 'self' data:; base-uri 'none'; form-action 'none'">
+  <title>VRKOS</title>
+  <link rel="stylesheet" href="os.css">
+  <link rel="stylesheet" href="desktop.css">
+</head>
+<body class="desktop-body">
+  <div id="app-bg"></div>
+
+  <header id="menubar">
+    <button id="os-menu" class="mb-item mb-logo" title="VRKOS">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 2.8 4.5 5.6v5.7c0 4.7 3.2 8.6 7.5 9.9 4.3-1.3 7.5-5.2 7.5-9.9V5.6z"/><path d="m8.6 8.8 3.4 7 3.4-7"/></svg>
+    </button>
+    <span id="mb-app" class="mb-item mb-app">VRKOS</span>
+    <span class="spacer"></span>
+    <button id="mb-sound" class="mb-item" title="Sound"></button>
+    <button id="mb-network" class="mb-item" title="Network"></button>
+    <button id="mb-battery" class="mb-item" title="Battery" hidden></button>
+    <button id="mb-search" class="mb-item" title="Search (⌥Space)"></button>
+    <button id="mb-clock" class="mb-item mb-clock" title="Date and calendar"></button>
+  </header>
+
+  <section id="icons" aria-label="Desktop"></section>
+
+  <nav id="dock"></nav>
+
+  <section id="launchpad" hidden>
+    <input id="lp-search" class="lp-search" placeholder="Search apps, files and the web" autocomplete="off" spellcheck="false">
+    <div id="lp-results" class="lp-results"></div>
+  </section>
+
+  <section id="lock" hidden>
+    <div class="lock-card">
+      <div id="lock-clock" class="lock-clock"></div>
+      <div id="lock-date" class="lock-date"></div>
+      <p>VRKOS is locked.</p>
+      <button id="lock-unlock" class="btn primary">Unlock with Touch ID</button>
+    </div>
+  </section>
+
+  <script src="shared/theme.js"></script>
+  <script src="shared/effects.js"></script>
+  <script src="icons.js"></script>
+  <script src="common.js"></script>
+  <script src="desktop.js"></script>
+</body>
+</html>
