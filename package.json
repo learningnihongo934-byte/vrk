@@ -1,6 +1,6 @@
 {
   "name": "vrk",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "VRK: a private, ad-blocking browser on the latest Chromium, with Tor tabs, a built-in WireGuard VPN and VRKOS. For macOS, Windows and Linux.",
   "main": "src/main.js",
   "scripts": {
