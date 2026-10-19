@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=4">
+  <link rel="stylesheet" href="styles.css?v=5">
 <script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "SoftwareApplication", "name": "VRK", "url": "https://vrkweb.web.app", "description": "A private, ad-blocking web browser with Tor tabs, a built-in VPN and VRKOS.", "author": {"@id": "https://virat-kaukuntla.web.app/#person"}, "creator": {"@id": "https://virat-kaukuntla.web.app/#person"}, "applicationCategory": "BrowserApplication", "operatingSystem": "macOS, Windows, Linux", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}, {"@type": "Person", "@id": "https://virat-kaukuntla.web.app/#person", "name": "Virat Kaukuntla", "alternateName": ["Virat Reddy Kaukuntla", "Virat Reddy"], "url": "https://virat-kaukuntla.web.app/"}]}</script>
 </head>
 <body>
@@ -34,6 +34,16 @@
 <main id="top">
   <!-- ======================= HERO ======================= -->
   <section class="hero" id="download">
+    <aside class="notice reveal in" id="notice" role="note">
+      <span class="notice-icon mono">$_</span>
+      <div>
+        <b>Why a command instead of a download?</b>
+        Apps downloaded from a website need a paid Apple developer certificate, or macOS says they're "damaged" and won't open them
+        (Windows shows a warning too). VRK is free, so instead of an app file you paste one command: it downloads VRK, installs it and opens it,
+        with no warnings. You can <a href="/install.sh" target="_blank">read the script</a> first.
+      </div>
+      <button class="notice-close" id="notice-close" aria-label="Hide this notice">✕</button>
+    </aside>
     <div class="ticker mono"><span class="dot"></span>Chromium <b>152</b> · Tor · WireGuard · free</div>
     <h1 class="display">
       <span class="line"><span>Browse like</span></span>
@@ -196,6 +206,6 @@ cores  10 · memory 16 GB
   <div class="foot mono"><a href="https://github.com/learningnihongo934-byte/vrk" target="_blank" rel="noopener">github</a><a href="#faq">faq</a><span>© 2026 Virat Kaukuntla · free to use, no copying or redistribution</span></div>
 </footer>
 <div class="toast" id="toast"></div>
-<script src="app.js?v=5"></script>
+<script src="app.js?v=7"></script>
 </body>
 </html>

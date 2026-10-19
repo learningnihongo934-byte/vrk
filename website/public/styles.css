@@ -297,3 +297,13 @@ td:nth-child(2) { background: rgba(212,255,58,.05); }
 .window { margin-top: 44px; }
 .scroll-cue { margin-top: 40px; }
 .ticker b { min-width: 0; }
+
+/* notice: why a command */
+.notice { display: flex; gap: 14px; align-items: flex-start; max-width: 860px; margin-bottom: 26px; padding: 14px 16px; border: 1px solid rgba(212,255,58,.35);
+  background: rgba(212,255,58,.06); border-radius: 14px; font-size: 14.5px; line-height: 1.55; color: var(--dim); backdrop-filter: blur(8px); }
+.notice b { display: block; color: var(--paper); font-weight: 600; margin-bottom: 2px; }
+.notice a { color: var(--lime); }
+.notice-icon { flex: none; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 9px; background: var(--lime); color: var(--ink); font-size: 13px; font-weight: 500; }
+.notice-close { flex: none; margin-left: auto; border: 0; background: none; color: var(--faint); font-size: 14px; cursor: pointer; padding: 4px; }
+.notice-close:hover { color: var(--paper); }
+@media (max-width: 560px) { .notice { font-size: 13.5px; } .notice-icon { display: none; } }

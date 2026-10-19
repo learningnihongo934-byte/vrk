@@ -84,13 +84,39 @@ function setOS(o, animate = true) {
 $$('.os-tabs button').forEach((b) => (b.onclick = () => setOS(b.dataset.os)));
 setTimeout(() => setOS(os), 700);
 
+// The clipboard API, or (inside frames and older browsers) the classic way:
+// select hidden text and run the copy command, which works on a click.
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {}
+  const area = document.createElement('textarea');
+  area.value = text;
+  area.setAttribute('readonly', '');
+  area.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;';
+  document.body.append(area);
+  area.select();
+  area.setSelectionRange(0, text.length);
+  let ok = false;
+  try {
+    ok = document.execCommand('copy');
+  } catch {}
+  area.remove();
+  if (!ok) {
+    // Last resort: leave the command selected so ⌘C / Ctrl+C copies it.
+    const code = $('#cmd');
+    const range = document.createRange();
+    range.selectNodeContents(code);
+    getSelection().removeAllRanges();
+    getSelection().addRange(range);
+  }
+  return ok;
+}
+
 async function copyCmd(btn) {
   if (OS[os].soon) return toast('The Linux version is coming soon.');
-  try {
-    await navigator.clipboard.writeText(OS[os].cmd);
-  } catch {
-    return toast('Select the command and copy it.');
-  }
+  if (!(await copyText(OS[os].cmd))) return toast('Couldn’t reach the clipboard. Press ⌘C / Ctrl+C now to copy.');
   const s = btn.querySelector('span') || btn;
   const t = s.textContent;
   s.textContent = 'Copied ✓';
@@ -219,3 +245,14 @@ $$('[data-spot]').forEach((el) =>
 // The marquee loops seamlessly with a second copy.
 const track = $('#track');
 track.innerHTML += track.innerHTML;
+
+// The "why a command" notice: hide it once you've read it.
+try {
+  if (localStorage.getItem('vrk-notice-hidden') === '1') $('#notice').hidden = true;
+} catch {}
+$('#notice-close').onclick = () => {
+  $('#notice').hidden = true;
+  try {
+    localStorage.setItem('vrk-notice-hidden', '1');
+  } catch {}
+};
