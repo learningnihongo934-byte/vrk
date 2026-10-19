@@ -1172,7 +1172,7 @@ class Browser {
       themeId: settings.get('themeId'),
       canReopen: this.closedTabs.length > 0,
       locked: this.locked,
-      tor: { available: tor.available, state: tor.state, progress: tor.progress, summary: tor.summary, error: tor.lastError, bridge: tor.bridge },
+      tor: { available: tor.available, state: tor.state, progress: tor.progress, summary: tor.summary, error: tor.lastError, bridge: tor.bridge, active: tor.active },
       vpn: { available: vpn.available, state: vpn.state, name: vpn.active?.name || null, error: vpn.lastError, hasConfigs: vpn.configs.length > 0 },
       tabs: this.order.map((id) => this.tabs.get(id)).filter((tab) => tab && !tab.wc.isDestroyed()).map((tab) => this.tabState(tab)),
     };
