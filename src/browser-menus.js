@@ -33,6 +33,21 @@ module.exports = {
     Menu.buildFromTemplate(template.filter(Boolean)).popup({ window: this.win, x: Math.round(x), y: Math.round(y) });
   },
 
+  // Right-click on an extension's toolbar button.
+  showExtensionMenu(ext, rect) {
+    const options = this.extensions.optionsUrl(ext.id);
+    this.popup(
+      [
+        { label: ext.name, enabled: false },
+        { type: 'separator' },
+        options && { label: 'Options', click: () => this.createTab(options) },
+        { label: 'Site Access & Settings…', click: () => this.openSettings('extensions') },
+      ],
+      (rect?.x || 0) + (rect?.width || 0) / 2,
+      (rect?.y || 0) + (rect?.height || 0) + 4,
+    );
+  },
+
   // The address bar's "Search with" switcher, like Firefox's.
   showSearchMenu(x, y) {
     const current = this.settings.get('searchEngine');
@@ -355,7 +370,7 @@ module.exports = {
         '',
         'No telemetry. In Standard mode your history is saved encrypted on this Mac only; Private and Memory-only modes save none.',
         '',
-        'Extension support: electron-chrome-extensions (GPL-3.0).',
+        'Extension support: VRK’s own extension host on Electron’s built-in extension system.',
       ].join('\n'),
       buttons: ['OK'],
     });

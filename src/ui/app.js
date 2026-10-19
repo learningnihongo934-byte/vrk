@@ -395,7 +395,8 @@ async function refreshExtensionActions() {
     button.title = perTab.title || action.title || '';
     const img = new Image();
     img.alt = '';
-    img.src = `crx://extension-icon/${action.id}/32/2?tabId=${tabId}&partition=vrk-main${action.iconModified ? `&t=${action.iconModified}` : ''}`;
+    if (action.icon) img.src = action.icon;
+    else queueMicrotask(() => img.onerror?.());
     img.onerror = () => {
       const letter = document.createElement('span');
       letter.className = 'letter';

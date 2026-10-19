@@ -147,23 +147,25 @@ class Extensions extends EventEmitter {
     // The Web Store library downloads with Node's fetch, which would bypass
     // VRK's VPN and encrypted DNS; send it through VRK's network stack instead.
     globalThis.fetch = (input, init) => this.fetchSession.fetch(input, init);
-    const { ElectronChromeExtensions, setSessionPartitionResolver } = require('electron-chrome-extensions');
     const webStore = require('electron-chrome-web-store');
     this.webStore = webStore;
 
-    setSessionPartitionResolver((partition) => (partition === PARTITION ? this.session : electronSession.fromPartition(partition)));
-    // VRK's toolbar loads extension icons from crx:// URLs.
-    ElectronChromeExtensions.handleCRXProtocol(this.uiSession);
-    this.api = new ElectronChromeExtensions({
-      license: 'GPL-3.0',
+    // VRK's own extension host (toolbar buttons, popups, tabs, windows, menus).
+    const { ExtensionHost } = require('./extension-host');
+    this.api = new ExtensionHost({
       session: this.session,
-      createTab: (details) => this.hooks.createTab(details),
-      selectTab: (wc) => this.hooks.selectTab(wc),
-      removeTab: (wc) => this.hooks.removeTab(wc),
-      createWindow: (details) => this.createWindow(details),
-      removeWindow: (win) => win.destroy(),
+      hooks: {
+        tabs: () => this.hooks.tabs(),
+        activeContents: () => this.hooks.activeContents(),
+        window: () => this.hooks.window(),
+        createTab: (details) => this.hooks.createTab(details),
+        selectTab: (wc) => this.hooks.selectTab(wc),
+        removeTab: (wc) => this.hooks.removeTab(wc),
+        createWindow: (details) => this.createWindow(details),
+        extensionMenu: (ext, rect) => this.hooks.extensionMenu(ext, rect),
+      },
     });
-    this.api.on('browser-action-popup-created', () => this.emit('change'));
+    this.api.on('change', () => this.emit('change'));
     this.session.extensions.on('extension-loaded', (_event, ext) => {
       this.emit('change');
       // Store updates replace the manifest: put the site rules back.
@@ -203,7 +205,6 @@ class Extensions extends EventEmitter {
     });
     const url = Array.isArray(details.url) ? details.url[0] : details.url;
     if (url) win.loadURL(url);
-    this.api.addTab(win.webContents, win);
     return win;
   }
 

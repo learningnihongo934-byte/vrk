@@ -77,8 +77,6 @@ const REQUESTS = new Set([
   'themes:export',
   'themes:import',
 ]);
-// Extension toolbar buttons talk to electron-chrome-extensions in VRK's main profile.
-const crx = (name, ...args) => ipcRenderer.invoke('crx-msg-remote', 'vrk-main', name, ...args);
 
 contextBridge.exposeInMainWorld('vrk', {
   ready: () => send('ui-ready'),
@@ -126,13 +124,11 @@ contextBridge.exposeInMainWorld('vrk', {
     if (!REQUESTS.has(name)) return Promise.reject(new Error(`Unknown request ${name}`));
     return ipcRenderer.invoke(`vrk:${name}`, ...args);
   },
+  // Extension toolbar buttons (VRK's extension host).
   extensionActions: {
-    getState: () => crx('browserAction.getState'),
-    activate: (details) => crx('browserAction.activate', details),
-    observe: (callback) => {
-      crx('browserAction.addObserver');
-      ipcRenderer.on('browserAction.update', () => callback());
-    },
+    getState: () => ipcRenderer.invoke('vrk:extension-actions'),
+    activate: (details) => ipcRenderer.invoke('vrk:extension-activate', details),
+    observe: (callback) => ipcRenderer.on('vrk:extensions-changed', () => callback()),
   },
   onState: (callback) => ipcRenderer.on('vrk:state', (_event, state) => callback(state)),
   onEvent: (callback) => {

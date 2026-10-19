@@ -350,10 +350,16 @@ module.exports = async function selftest({ browser, shield, tor, vpn, vault, boo
     const extDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vrk-test-ext-'));
     fs.writeFileSync(path.join(extDir, 'manifest.json'), JSON.stringify({
       manifest_version: 3, name: 'VRK Test Extension', version: '1.0', permissions: ['storage'],
-      background: { service_worker: 'bg.js' }, action: { default_title: 'VRK Test' },
+      background: { service_worker: 'bg.js' }, action: { default_title: 'VRK Test', default_popup: 'popup.html' },
       content_scripts: [{ matches: ['<all_urls>'], js: ['cs.js'], run_at: 'document_end' }],
     }));
-    fs.writeFileSync(path.join(extDir, 'bg.js'), `chrome.runtime.onMessage.addListener((m, s, reply) => { chrome.storage.local.set({ seen: m.ping }).then(() => reply({ pong: m.ping })); return true; });`);
+    fs.writeFileSync(path.join(extDir, 'bg.js'), `chrome.runtime.onMessage.addListener((m, s, reply) => {
+        if (m.tabs) { Promise.all([chrome.tabs.query({ active: true, currentWindow: true }), chrome.windows.getCurrent()]).then(([t, w]) => reply({ tab: t[0] && t[0].id, window: w.id })); return true; }
+        chrome.storage.local.set({ seen: m.ping }).then(() => reply({ pong: m.ping })); return true; });
+      chrome.action.setBadgeText({ text: '7' });
+      chrome.action.setBadgeBackgroundColor({ color: '#ff0000' });
+      chrome.contextMenus.create({ id: 'vrk-test', title: 'VRK Test Item', contexts: ['page'] });`);
+    fs.writeFileSync(path.join(extDir, 'popup.html'), '<!doctype html><body style="width:200px;height:80px">VRK popup</body>');
     fs.writeFileSync(path.join(extDir, 'cs.js'), `const d = document.documentElement.dataset; d.vrkExt = 'ran';
       chrome.storage.local.get('seen').then((v) => { d.vrkExtSeen = String(v.seen); chrome.runtime.sendMessage({ ping: 7 }, (r) => { d.vrkExtReply = JSON.stringify(r || null); }); });`);
     const testExt = await browser.extensions.installFile(extDir);
@@ -363,7 +369,20 @@ module.exports = async function selftest({ browser, shield, tor, vpn, vault, boo
     const extResult = JSON.parse(await js(extPage, `JSON.stringify(document.documentElement.dataset)`));
     check('Extension content scripts run on pages', extResult.vrkExt === 'ran');
     check('Content scripts talk to the extension’s background', extResult.vrkExtReply === '{"pong":7}', extResult.vrkExtReply);
-    check('Extension buttons reach the toolbar', browser.extensions.api.api.browserAction.getState().actions.some((a) => a.id === testExt.id));
+    // VRK's own extension host (no GPL library): toolbar badges, tabs and windows, menus, popups.
+    const host = browser.extensions.api;
+    const button = host.toolbarState().find((a) => a.id === testExt.id);
+    check('Extension buttons reach the toolbar, with their badge', button && button.text === '7' && button.title === 'VRK Test', JSON.stringify(button));
+    const sw = [...host.workers.values()].find((w) => w.id === testExt.id);
+    check('Extensions’ background workers get VRK’s APIs', Boolean(sw));
+    const menuItems = host.contextMenuItems(extPage.wc, { pageURL: `${local}/headers`, mediaType: 'none', selectionText: '', linkURL: '', isEditable: false, frameURL: '' });
+    check('Extension right-click menu items appear', menuItems.some((i) => i.label === 'VRK Test Item'));
+    const tabInfo = host.tabInfo(browser.extensions.session.extensions.getExtension(testExt.id), extPage.wc);
+    check('Extensions see tabs, but not their addresses without permission', tabInfo.id === extPage.wc.id && tabInfo.url === undefined);
+    host.activate(testExt.id, { x: 600, y: 40, width: 30, height: 30 }, false);
+    await wait(1200);
+    check('Clicking an extension button opens its popup', host.popup && !host.popup.isDestroyed() && host.popup.webContents.getURL().endsWith('/popup.html'));
+    host.closePopup();
 
     // ── 8b. Extensions from the three stores ──
     if (!skip.has('ext') && !skip.has('net')) {
@@ -463,7 +482,7 @@ module.exports = async function selftest({ browser, shield, tor, vpn, vault, boo
     const oldPrefs = path.join(os.tmpdir(), `vrk-old-prefs-${process.pid}.json`);
     fs.writeFileSync(oldPrefs, JSON.stringify({ clearOnQuit: true, accent: 'pink' }));
     const migrated = new Settings(oldPrefs);
-    check('Older settings move to Standard mode (history on), keeping your other choices', migrated.mode() === 'standard' && migrated.get('accent') === 'pink' && JSON.parse(fs.readFileSync(oldPrefs, 'utf8')).settingsVersion === 2);
+    check('Older settings move to Standard mode (history on), keeping your other choices', migrated.mode() === 'standard' && migrated.get('accent') === 'pink' && JSON.parse(fs.readFileSync(oldPrefs, 'utf8')).settingsVersion === 3);
     fs.rmSync(oldPrefs, { force: true });
     history.clear();
     const visited = await open(`${local}/login`);

@@ -906,7 +906,7 @@ const views = {
         h('span'),
       ),
     ),
-    card('Open source', h('div', { class: 'empty' }, 'Built on Chromium (BSD), Electron (MIT), Ghostery’s adblocker (MPL-2.0), Tor (BSD), wireproxy (ISC) and electron-chrome-extensions (GPL-3.0).')),
+    card('License', h('div', { class: 'empty' }, 'VRK © Virat Kaukuntla: free to use; copying or redistributing it isn’t allowed. Built on Chromium (BSD), Electron (MIT), Ghostery’s adblocker (MPL-2.0), Tor (BSD), wireproxy (ISC) and electron-chrome-web-store (MIT), which keep their own licenses.')),
   ],
 };
 

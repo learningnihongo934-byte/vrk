@@ -128,6 +128,11 @@ class Browser {
         // and while a page is being torn down (nothing left to do).
         removeTab: (wc) => !wc.isDestroyed() && this.byContents.has(wc.id) && this.closeTab(this.byContents.get(wc.id).id),
         confirmInstall: (details) => this.confirmExtensionInstall(details),
+        // Normal tabs only: Tor and container tabs stay invisible to extensions.
+        tabs: () => this.order.map((id) => this.tabs.get(id)).filter((t) => t && !t.tor && !t.container).map((t) => t.wc),
+        activeContents: () => (this.activeTab && !this.activeTab.tor && !this.activeTab.container ? this.activeTab.wc : null),
+        window: () => this.win,
+        extensionMenu: (ext, rect) => this.showExtensionMenu(ext, rect),
       },
     });
     this.extensions.on('change', () => this.send('extensions-changed'));
@@ -184,7 +189,7 @@ class Browser {
     try {
       await this.extensions.init();
       this.scheduleExtensionSafetyCheck();
-      for (const tab of this.tabs.values()) if (!tab.tor && !tab.container) this.extensions.api.addTab(tab.wc, this.win);
+      for (const tab of this.tabs.values()) if (!tab.tor && !tab.container) this.extensions.api.addTab(tab.wc);
       if (this.activeTab && !this.activeTab.tor && !this.activeTab.container) this.extensions.api.selectTab(this.activeTab.wc);
     } catch (err) {
       console.error('VRK: extensions failed to load', err);
@@ -231,8 +236,8 @@ class Browser {
     uiSession.setPermissionRequestHandler((_wc, _permission, callback) => callback(false));
     uiSession.setPermissionCheckHandler(() => false);
     // The UI is served from the private vrk://ui origin (never file://) and
-    // loads nothing else except extension icons (crx://); favicons arrive as
-    // data: URLs fetched by each tab's own session.
+    // loads nothing else (extension icons and favicons arrive as
+    // data: URLs).
     uiSession.protocol.handle('vrk', (request) => {
       const { host, pathname } = new URL(request.url);
       if (host === 'media') return this.serveMedia(request, decodeURIComponent(pathname.slice(1)));
@@ -480,7 +485,7 @@ class Browser {
     else this.order.push(tab.id);
     this.wireTab(tab);
     if (tor) this.applyTorEmulation(tab.wc);
-    if (!tor && !tab.container && this.extensions.ready) this.extensions.api.addTab(tab.wc, this.win);
+    if (!tor && !tab.container && this.extensions.ready) this.extensions.api.addTab(tab.wc);
     if (url) this.loadInTab(tab, url);
     if (background) this.queueState();
     else this.activate(tab.id);
@@ -921,7 +926,7 @@ class Browser {
       return { action: 'deny' };
     });
     wc.on('context-menu', (_event, params) => this.showContextMenu({ id: null, wc, tor: opener.tor, container: opener.container }, params));
-    if (!opener.tor && !opener.container && this.extensions.ready) this.extensions.api.addTab(wc, win);
+    if (!opener.tor && !opener.container && this.extensions.ready) this.extensions.api.addTab(wc);
   }
 
   showContextMenu(target, p) {
@@ -981,7 +986,7 @@ class Browser {
       );
     }
     if (!target.tor && !target.container && this.extensions.ready) {
-      const extensionItems = this.extensions.api.getContextMenuItems(wc, p);
+      const extensionItems = this.extensions.api.contextMenuItems(wc, p);
       if (extensionItems.length) items.push(...extensionItems, sep);
     }
     items.push({ label: 'Inspect Element', click: () => wc.inspectElement(p.x, p.y) });

@@ -189,6 +189,17 @@ module.exports = {
       'themes:export': (id) => this.exportThemeFile(String(id)),
       'themes:import': () => this.importThemeFile(),
     };
+    // Extension toolbar buttons.
+    ipcMain.handle('vrk:extension-actions', (event) => {
+      if (event.sender !== this.ui || this.locked || !this.extensions.ready) return { actions: [] };
+      return { actions: this.extensions.api.toolbarState() };
+    });
+    ipcMain.handle('vrk:extension-activate', (event, details) => {
+      if (event.sender !== this.ui || this.locked || !this.extensions.ready) return;
+      const rect = details?.anchorRect || {};
+      this.extensions.api.activate(String(details?.extensionId), { x: Number(rect.x) || 0, y: Number(rect.y) || 0, width: Number(rect.width) || 0, height: Number(rect.height) || 0 }, details?.eventType === 'contextmenu');
+    });
+
     for (const [name, handler] of Object.entries(requests)) {
       ipcMain.handle(`vrk:${name}`, async (event, ...args) => {
         if (event.sender !== this.ui) throw new Error('Not allowed.');
