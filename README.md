@@ -255,3 +255,7 @@ src/ui/                browser UI, settings, history, theme editor, effects, ope
 scripts/               binary fetcher, filter-list builder, icon, self-test, screenshots
 vendor/                Tor expert bundle + wireproxy (fetched, not committed)
 ```
+
+---
+
+Made by **Virat Reddy Kaukuntla** ([@learningnihongo934-byte](https://github.com/learningnihongo934-byte))
